@@ -13,13 +13,13 @@ let flagBreak = false;
 function updateDisplay() {
     if (flagPom) {
         pomTimer.classList.remove('hidden');
-        main.classList.remove('bg-cyan-500');
-        main.classList.add('bg-red-400');
+        main.classList.remove('bg-cyan-800');
+        main.classList.add('bg-red-700');
         breakTimer.classList.add('hidden');
     } else {
         pomTimer.classList.add('hidden');
-        main.classList.add('bg-cyan-500');
-        main.classList.remove('bg-red-400');
+        main.classList.add('bg-cyan-800');
+        main.classList.remove('bg-red-700');
         breakTimer.classList.remove('hidden');
     }
 }
