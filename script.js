@@ -3,6 +3,8 @@ const $all = document.querySelectorAll.bind(document);
 
 const pomTimer = $one('#pomodoro-timer');
 const breakTimer = $one('#break-timer');
+const pomoBtn = $one('#pomo-btn');
+const breakBtn = $one('#break-btn');
 
 let flagPom = true;
 let flagBreak = false;
@@ -17,7 +19,7 @@ function updateDisplay() {
     }
 }
 
-pomTimer.addEventListener('click', () => {
+pomoBtn.addEventListener('click', () => {
     if (!flagPom) {
         flagPom = true;
         flagBreak = false;
@@ -25,7 +27,7 @@ pomTimer.addEventListener('click', () => {
     }
 });
 
-breakTimer.addEventListener('click', () => {
+breakBtn.addEventListener('click', () => {
     if (!flagBreak) {
         flagBreak = true;
         flagPom = false;
