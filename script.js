@@ -1,6 +1,7 @@
 const $one = document.querySelector.bind(document);
 const $all = document.querySelectorAll.bind(document);
 
+const main = $one('#main');
 const pomTimer = $one('#pomodoro-timer');
 const breakTimer = $one('#break-timer');
 const pomoBtn = $one('#pomo-btn');
@@ -12,9 +13,13 @@ let flagBreak = false;
 function updateDisplay() {
     if (flagPom) {
         pomTimer.classList.remove('hidden');
+        main.classList.remove('bg-cyan-500');
+        main.classList.add('bg-red-400');
         breakTimer.classList.add('hidden');
     } else {
         pomTimer.classList.add('hidden');
+        main.classList.add('bg-cyan-500');
+        main.classList.remove('bg-red-400');
         breakTimer.classList.remove('hidden');
     }
 }
