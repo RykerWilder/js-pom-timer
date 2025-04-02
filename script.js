@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Impostazioni timer (in secondi)
     const settings = {
         pomodoro: 25 * 60,    // 25 minuti
-        shortBreak: 1 * 60      // 5 minuti
+        shortBreak: 5 * 60      // 5 minuti
     };
 
     // Elemento audio e stato
