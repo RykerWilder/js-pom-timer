@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // DOM Elements
+    // Elementi DOM
     const main = document.getElementById('main');
     const pomodoroTimer = document.getElementById('pomodoro-timer');
     const breakTimer = document.getElementById('break-timer');
@@ -8,31 +8,38 @@ document.addEventListener('DOMContentLoaded', function() {
     const startBtn = document.getElementById('start-btn');
     const pauseBtn = document.getElementById('pause-btn');
     const resetBtn = document.getElementById('reset-btn');
+    const soundBtn = document.getElementById('sound-btn');
 
-    // Timer Settings (in seconds)
+    // Impostazioni timer (in secondi)
     const settings = {
-        pomodoro: 25 * 60,   // 25 minutes
-        shortBreak: 5 * 60    // 5 minutes
+        pomodoro: 25 * 60,    // 25 minuti
+        shortBreak: 1 * 60      // 5 minuti
     };
 
-    // State Variables
+    // Elemento audio e stato
+    const alarmSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+    let audioEnabled = false;
+    let audioContextUnlocked = false;
+
+    // Variabili di stato
     let currentTime = settings.pomodoro;
     let timerInterval;
     let isRunning = false;
     let isPomodoro = true;
 
-    // Initialize
+    // Inizializzazione
     updateDisplay();
     displayTime();
 
-    // Event Listeners
+    // Event listeners
     pomodoroTab.addEventListener('click', () => switchMode(true));
     breakTab.addEventListener('click', () => switchMode(false));
     startBtn.addEventListener('click', startTimer);
     pauseBtn.addEventListener('click', pauseTimer);
     resetBtn.addEventListener('click', resetTimer);
+    soundBtn.addEventListener('click', enableAudio);
 
-    // Timer Functions
+    // Funzioni del timer
     function startTimer() {
         if (!isRunning) {
             isRunning = true;
@@ -55,6 +62,9 @@ document.addEventListener('DOMContentLoaded', function() {
         pauseTimer();
         currentTime = isPomodoro ? settings.pomodoro : settings.shortBreak;
         displayTime();
+        // Rimuovi l'animazione se presente
+        pomodoroTimer.classList.remove('timer-complete');
+        breakTimer.classList.remove('timer-complete');
     }
 
     function updateTimer() {
@@ -68,15 +78,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function timerComplete() {
         pauseTimer();
+        
+        // Aggiungi animazione
         if (isPomodoro) {
-            // Pomodoro completed, switch to break
-            switchMode(false);
-            alert('Pomodoro completed! Time for a break.');
+            pomodoroTimer.classList.add('timer-complete');
         } else {
-            // Break completed, switch to pomodoro
-            switchMode(true);
-            alert('Break over! Ready for another Pomodoro?');
+            breakTimer.classList.add('timer-complete');
         }
+        
+        // Riproduci suono se abilitato
+        if (audioEnabled) {
+            playAlarm();
+        }
+        
+        // Notifica all'utente
+        const message = isPomodoro ? 
+            "Pomodoro completato! Tempo di pausa." : 
+            "Pausa terminata! Pronto per un altro Pomodoro?";
+        
+        // Usa le notifiche del browser se supportate
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification(message);
+        } else {
+            alert(message);
+        }
+        
+        // Cambia modalità automaticamente
+        switchMode(!isPomodoro);
+    }
+
+    function playAlarm() {
+        // Assicurati che l'audio sia riavvolto
+        alarmSound.currentTime = 0;
+        
+        // Prova a riprodurre
+        alarmSound.play().catch(error => {
+            console.error("Errore riproduzione audio:", error);
+            // Se fallisce, prova a sbloccare di nuovo l'audio
+            enableAudio();
+        });
+    }
+
+    function enableAudio() {
+        // Sblocca l'audio context sui primi click dell'utente
+        if (!audioContextUnlocked) {
+            const unlockAudio = () => {
+                const context = new (window.AudioContext || window.webkitAudioContext)();
+                const source = context.createBufferSource();
+                source.connect(context.destination);
+                audioContextUnlocked = true;
+                document.removeEventListener('click', unlockAudio);
+            };
+            document.addEventListener('click', unlockAudio);
+        }
+        
+        // Sblocca l'audio
+        alarmSound.volume = 0.5;
+        alarmSound.play().then(() => {
+            audioEnabled = true;
+            alarmSound.pause();
+            alarmSound.currentTime = 0;
+            soundBtn.textContent = "Test Audio";
+            soundBtn.classList.remove('bg-gray-300');
+            soundBtn.classList.add('bg-white');
+        }).catch(error => {
+            console.error("Errore abilitazione audio:", error);
+            soundBtn.textContent = "Audio Disabilitato";
+            soundBtn.classList.remove('bg-white');
+            soundBtn.classList.add('bg-gray-300');
+        });
     }
 
     function switchMode(toPomodoro) {
@@ -103,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateDisplay() {
         if (isPomodoro) {
-            // Show Pomodoro
+            // Modalità Pomodoro
             pomodoroTimer.classList.remove('hidden');
             breakTimer.classList.add('hidden');
             main.classList.remove('bg-cyan-700');
@@ -111,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
             pomodoroTab.classList.add('active-tab');
             breakTab.classList.remove('active-tab');
         } else {
-            // Show Break
+            // Modalità Pausa
             pomodoroTimer.classList.add('hidden');
             breakTimer.classList.remove('hidden');
             main.classList.remove('bg-red-600');
@@ -120,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             breakTab.classList.add('active-tab');
         }
         
-        // Update button states
+        // Aggiorna stato pulsanti
         if (isRunning) {
             startBtn.classList.add('hidden');
             pauseBtn.classList.remove('hidden');
@@ -128,5 +198,10 @@ document.addEventListener('DOMContentLoaded', function() {
             startBtn.classList.remove('hidden');
             pauseBtn.classList.add('hidden');
         }
+    }
+
+    // Richiedi permesso per le notifiche
+    if ("Notification" in window) {
+        Notification.requestPermission();
     }
 });
